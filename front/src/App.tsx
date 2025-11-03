@@ -96,9 +96,8 @@ function App() {
   const handleResendCode = async () => {
     if (!verificationEmail) return;
     try {
-      await api.post('/auth/signup', {
+      await api.post('/auth/resend', {
         email: verificationEmail,
-        name: verificationName || '',
       });
     } catch (err) {
       throw err;

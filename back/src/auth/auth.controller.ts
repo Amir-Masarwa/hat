@@ -19,6 +19,14 @@ export class AuthController {
     return result;
   }
 
+  @Post('resend')
+  async resend(@Body('email') email: string) {
+    if (!email) {
+      throw new BadRequestException('Email is required');
+    }
+    return this.authService.resendVerification(email);
+  }
+
   @Post('verify')
   async verify(
     @Body('email') email: string,
