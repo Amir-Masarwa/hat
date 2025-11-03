@@ -8,6 +8,7 @@ interface LoginPageProps {
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToSignUp }) => {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -16,15 +17,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToSignUp }) => {
     setError('');
     setLoading(true);
     try {
-      const response = await api.post('/auth/login', { email });
+      const response = await api.post('/auth/login', { email, password });
       const token = response.data.token;
       if (token) {
         onLogin(token);
       } else {
         setError('Invalid response from server.');
       }
-    } catch (err) {
-      setError('Login failed. Are you registered?');
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Login failed.');
     } finally {
       setLoading(false);
     }
@@ -46,8 +47,19 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToSignUp }) => {
               disabled={loading}
             />
           </div>
+          <div className="form-group">
+            <label>Password:</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{ width: '100%' }}
+              disabled={loading}
+            />
+          </div>
           {error && <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>}
-          <button className="btn btn-primary" type="submit" disabled={loading || !email} style={{ width: '100%' }}>
+          <button className="btn btn-primary" type="submit" disabled={loading || !email || !password} style={{ width: '100%' }}>
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>

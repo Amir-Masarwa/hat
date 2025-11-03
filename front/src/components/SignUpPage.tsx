@@ -10,6 +10,7 @@ interface SignUpPageProps {
 const SignUpPage: React.FC<SignUpPageProps> = ({ onLogin, onSwitchToLogin, onVerificationSent }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -19,7 +20,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLogin, onSwitchToLogin, onVer
     setError('');
     try {
       // Sign up and send verification code
-      await api.post('/auth/signup', { name, email });
+      await api.post('/auth/signup', { name, email, password });
       // Show verification page
       onVerificationSent(email, name);
     } catch (err: any) {
@@ -60,8 +61,19 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLogin, onSwitchToLogin, onVer
               disabled={loading}
             />
           </div>
+          <div className="form-group">
+            <label>Password:</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{ width: '100%' }}
+              disabled={loading}
+            />
+          </div>
           {error && <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>}
-          <button className="btn btn-primary" type="submit" disabled={loading || !email || !name} style={{ width: '100%' }}>
+          <button className="btn btn-primary" type="submit" disabled={loading || !email || !name || !password} style={{ width: '100%' }}>
             {loading ? 'Signing up...' : 'Sign Up'}
           </button>
         </form>

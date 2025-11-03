@@ -9,12 +9,13 @@ export class AuthController {
   async signup(
     @Body('email') email: string,
     @Body('name') name: string,
+    @Body('password') password: string,
   ) {
-    if (!email) {
-      throw new BadRequestException('Email is required');
+    if (!email || !password) {
+      throw new BadRequestException('Email and password are required');
     }
 
-    const result = await this.authService.registerUser(email, name);
+    const result = await this.authService.registerUser(email, name, password);
     return result;
   }
 
@@ -33,8 +34,12 @@ export class AuthController {
   @Post('login')
   async login(
     @Body('email') email: string,
+    @Body('password') password: string,
   ) {
-    const token = await this.authService.loginUser(email);
+    if (!email || !password) {
+      throw new BadRequestException('Email and password are required');
+    }
+    const token = await this.authService.loginUser(email, password);
     return { token };
   }
 }
