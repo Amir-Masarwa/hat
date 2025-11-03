@@ -28,7 +28,7 @@ export class AuthService {
       // If user exists but not verified, generate new code
       const verificationCode = this.generateVerificationCode();
       await this.usersService.update(existing.id, { verificationCode });
-      await this.sendVerificationEmail(email, verificationCode);
+      await this.sendVerificationEmail(email, verificationCode, existing.name);
       return { message: 'Verification code sent', email };
     }
 
@@ -41,7 +41,7 @@ export class AuthService {
       verificationCode,
     });
 
-    await this.sendVerificationEmail(email, verificationCode);
+    await this.sendVerificationEmail(email, verificationCode, name);
 
     return { message: 'Verification code sent', email };
   }
@@ -49,12 +49,8 @@ export class AuthService {
   /**
    * Send verification email with code
    */
-  private async sendVerificationEmail(email: string, code: string) {
-    await this.emailService.sendEmail(
-      email,
-      'Verify Your Email - Task Manager',
-      `Your verification code is: ${code}\n\nEnter this code to verify your email address.`,
-    );
+  private async sendVerificationEmail(email: string, code: string, name?: string) {
+    await this.emailService.sendVerification(email, name, code);
   }
 
   /**

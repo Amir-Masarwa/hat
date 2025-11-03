@@ -34,3 +34,7 @@ Or connect with any PostgreSQL client using:
 - Password: `postgres`
 - Database: `task_manager`
 
+
+
+to see the tables .. 
+npx prisma studio
