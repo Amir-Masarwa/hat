@@ -1,53 +1,32 @@
-import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { SignupDto } from './dto/signup.dto';
+import { LoginDto } from './dto/login.dto';
+import { VerifyDto } from './dto/verify.dto';
+import { ResendDto } from './dto/resend.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
-  async signup(
-    @Body('email') email: string,
-    @Body('name') name: string,
-    @Body('password') password: string,
-  ) {
-    if (!email || !password) {
-      throw new BadRequestException('Email and password are required');
-    }
-
-    const result = await this.authService.registerUser(email, name, password);
-    return result;
+  async signup(@Body() dto: SignupDto) {
+    return this.authService.registerUser(dto.email, dto.name, dto.password);
   }
 
   @Post('resend')
-  async resend(@Body('email') email: string) {
-    if (!email) {
-      throw new BadRequestException('Email is required');
-    }
-    return this.authService.resendVerification(email);
+  async resend(@Body() dto: ResendDto) {
+    return this.authService.resendVerification(dto.email);
   }
 
   @Post('verify')
-  async verify(
-    @Body('email') email: string,
-    @Body('code') code: string,
-  ) {
-    if (!email || !code) {
-      throw new BadRequestException('Email and code are required');
-    }
-
-    return await this.authService.verifyEmail(email, code);
+  async verify(@Body() dto: VerifyDto) {
+    return await this.authService.verifyEmail(dto.email, dto.code);
   }
 
   @Post('login')
-  async login(
-    @Body('email') email: string,
-    @Body('password') password: string,
-  ) {
-    if (!email || !password) {
-      throw new BadRequestException('Email and password are required');
-    }
-    const token = await this.authService.loginUser(email, password);
+  async login(@Body() dto: LoginDto) {
+    const token = await this.authService.loginUser(dto.email, dto.password);
     return { token };
   }
 }

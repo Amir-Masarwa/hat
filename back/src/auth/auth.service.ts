@@ -95,8 +95,7 @@ export class AuthService {
       this.prisma.user.update({ where: { id: user.id }, data: { verified: true } as any }),
     ]);
 
-    const token = await this.signToken(user);
-    return { message: 'Email verified successfully', token };
+    return { message: 'Email verified successfully. Please log in.' };
   }
 
   async loginUser(email: string, password: string) {

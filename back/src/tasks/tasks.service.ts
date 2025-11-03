@@ -24,6 +24,9 @@ export class TasksService {
       include: {
         user: true,
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
@@ -32,6 +35,9 @@ export class TasksService {
       where: { userId },
       include: {
         user: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
   }

@@ -3,7 +3,7 @@ import { api } from '../services/api';
 
 interface VerificationPageProps {
   email: string;
-  onVerified: (token: string) => void;
+  onVerified: () => void;
   onResend?: () => void;
 }
 
@@ -12,6 +12,7 @@ const VerificationPage: React.FC<VerificationPageProps> = ({ email, onVerified, 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,10 +24,12 @@ const VerificationPage: React.FC<VerificationPageProps> = ({ email, onVerified, 
     setLoading(true);
     setError('');
     try {
-      const response = await api.post('/auth/verify', { email, code });
-      if (response.data.token) {
-        onVerified(response.data.token);
-      }
+      await api.post('/auth/verify', { email, code });
+      setSuccess(true);
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        onVerified();
+      }, 2000);
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Invalid verification code');
     } finally {
@@ -47,13 +50,30 @@ const VerificationPage: React.FC<VerificationPageProps> = ({ email, onVerified, 
     }
   };
 
+  if (success) {
+    return (
+      <div className="container" style={{ maxWidth: 400, margin: '60px auto' }}>
+        <div className="card">
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: '48px', marginBottom: 12 }}>✅</div>
+            <h2 style={{ color: '#28a745', marginBottom: 8 }}>Email Verified!</h2>
+            <p style={{ color: '#666' }}>Redirecting to login page...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container" style={{ maxWidth: 350, margin: '60px auto' }}>
+    <div className="container" style={{ maxWidth: 400, margin: '60px auto' }}>
       <div className="card">
-        <h2 style={{ marginBottom: 16 }}>Verify Your Email</h2>
-        <p style={{ color: '#666', marginBottom: 20 }}>
-          We've sent a 6-digit verification code to <strong>{email}</strong>
-        </p>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ fontSize: '48px', marginBottom: 12 }}>📧</div>
+          <h2 style={{ margin: 0, marginBottom: 8 }}>Verify Your Email</h2>
+          <p style={{ color: '#666', margin: 0, marginBottom: 20 }}>
+            We've sent a 6-digit code to <strong>{email}</strong>
+          </p>
+        </div>
         <form onSubmit={handleVerify}>
           <div className="form-group">
             <label>Verification Code:</label>

@@ -35,9 +35,15 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onLogin, onSwitchToLogin, onVer
   };
 
   return (
-    <div className="container" style={{ maxWidth: 350, margin: '60px auto' }}>
+    <div className="container" style={{ maxWidth: 400, margin: '60px auto' }}>
       <div className="card">
-        <h2 style={{ marginBottom: 16 }}>Sign Up</h2>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ fontSize: '48px', marginBottom: 12 }}>🚀</div>
+          <h2 style={{ margin: 0, marginBottom: 8 }}>Create Account</h2>
+          <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>
+            Start managing your tasks today
+          </p>
+        </div>
         <form onSubmit={handleRegister}>
           <div className="form-group">
             <label>Email:</label>

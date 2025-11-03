@@ -91,6 +91,9 @@ function App() {
     setCurrentUser(null);
     setTasks([]);
     setIsAuthenticated(false);
+    setShowSignUp(false);
+    setVerificationEmail(null);
+    setVerificationName(null);
   };
 
   const handleResendCode = async () => {
@@ -109,11 +112,11 @@ function App() {
       return (
         <VerificationPage
           email={verificationEmail}
-          onVerified={(token: string) => {
-            localStorage.setItem('token', token);
-            setApiToken(token);
-            setIsAuthenticated(true);
+          onVerified={() => {
+            // Clear verification state and show login page
             setVerificationEmail(null);
+            setVerificationName(null);
+            setShowSignUp(false);
           }}
           onResend={handleResendCode}
         />
