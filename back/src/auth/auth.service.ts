@@ -102,9 +102,41 @@ export class AuthService {
   async loginUser(email: string, password: string) {
     const user: any = await this.usersService.findByEmail(email);
     if (!user) throw new UnauthorizedException('Invalid credentials');
+
+    // Check lockout
+    if (user.blockedUntil && new Date(user.blockedUntil) > new Date()) {
+      const seconds = Math.ceil((new Date(user.blockedUntil).getTime() - Date.now()) / 1000);
+      throw new UnauthorizedException(`Account locked. Try again in ${seconds}s`);
+    }
+
     if (!user.verified) throw new UnauthorizedException('Please verify your email first');
+
     const ok = await bcrypt.compare(password, user.password);
-    if (!ok) throw new UnauthorizedException('Invalid credentials');
+    if (!ok) {
+      const newCount = (user.failedLoginCount || 0) + 1;
+      if (newCount >= 3) {
+        // Block for 2 minutes and reset counter
+        const unblockAt = new Date(Date.now() + 2 * 60 * 1000);
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { blockedUntil: unblockAt, failedLoginCount: 0 } as any,
+        });
+        throw new UnauthorizedException('Too many failed attempts. Account locked for 2 minutes');
+      } else {
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { failedLoginCount: newCount } as any,
+        });
+      }
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Successful login: reset lock counters
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { failedLoginCount: 0, blockedUntil: null } as any,
+    });
+
     return this.signToken(user);
   }
 

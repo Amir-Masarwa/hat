@@ -11,15 +11,17 @@ datasource db {
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  email           String   @unique
-  name            String?
-  password        String
-  verified        Boolean  @default(false)
-  verificationCode String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  tasks           Task[]
+  id                Int      @id @default(autoincrement())
+  email             String   @unique
+  name              String?
+  password          String
+  verified          Boolean  @default(false)
+  verificationCode  String?
+  failedLoginCount  Int      @default(0)
+  blockedUntil      DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  tasks             Task[]
   verificationCodes VerificationCode[]
 }
 
