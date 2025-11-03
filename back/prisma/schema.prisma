@@ -48,3 +48,14 @@ model VerificationCode {
   @@index([userId, expiresAt])
 }
 
+model IpAllowList {
+  id        Int      @id @default(autoincrement())
+  ip        String   @unique
+  label     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ip, isActive])
+}
+

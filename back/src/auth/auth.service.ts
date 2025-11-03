@@ -1,7 +1,8 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { EmailService } from '../email/email.service';
+import { IpAllowlistService } from '../ip-allowlist/ip-allowlist.service';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -12,6 +13,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
     private readonly prisma: PrismaService,
+    private readonly ipAllowlistService: IpAllowlistService,
   ) {}
 
   private generateVerificationCode(): string {
@@ -98,7 +100,16 @@ export class AuthService {
     return { message: 'Email verified successfully. Please log in.' };
   }
 
-  async loginUser(email: string, password: string) {
+  async loginUser(email: string, password: string, clientIp?: string, userAgent?: string) {
+    // Check IP allow-list first (tamper-resistant)
+    if (clientIp) {
+      const allowed = await this.ipAllowlistService.isIpAllowed(clientIp);
+      if (!allowed) {
+        await this.ipAllowlistService.logDeniedAttempt(clientIp, email, userAgent);
+        throw new ForbiddenException('Login is restricted from your IP address. Contact support.');
+      }
+    }
+
     const user: any = await this.usersService.findByEmail(email);
     if (!user) throw new UnauthorizedException('Invalid credentials');
 

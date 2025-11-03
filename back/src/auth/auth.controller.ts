@@ -27,8 +27,21 @@ export class AuthController {
   }
 
   @Post('login')
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
-    const token = await this.authService.loginUser(dto.email, dto.password);
+  async login(
+    @Body() dto: LoginDto,
+    @Request() req: any,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    // Extract client IP (tamper-resistant: prefer direct IP over headers)
+    const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+    const userAgent = req.headers['user-agent'];
+
+    const token = await this.authService.loginUser(
+      dto.email,
+      dto.password,
+      clientIp,
+      userAgent,
+    );
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
