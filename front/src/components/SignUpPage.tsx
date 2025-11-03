@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { api } from '../services/api';
 
 interface SignUpPageProps {
-  onLogin: (token: string) => void;
+  onLogin: () => void;
   onSwitchToLogin: () => void;
   onVerificationSent: (email: string, name: string) => void;
 }

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { api } from '../services/api';
 
 interface LoginPageProps {
-  onLogin: (token: string) => void;
+  onLogin: () => void;
   onSwitchToSignUp: () => void;
 }
 
@@ -17,13 +17,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToSignUp }) => {
     setError('');
     setLoading(true);
     try {
-      const response = await api.post('/auth/login', { email, password });
-      const token = response.data.token;
-      if (token) {
-        onLogin(token);
-      } else {
-        setError('Invalid response from server.');
-      }
+      await api.post('/auth/login', { email, password });
+      onLogin();
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Login failed.');
     } finally {

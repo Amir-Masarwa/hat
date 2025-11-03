@@ -47,7 +47,8 @@ const TaskList: React.FC<TaskListProps> = ({
   const handleEditFieldChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
     setEditFields((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : type === 'number' ? parseInt(value) : value,

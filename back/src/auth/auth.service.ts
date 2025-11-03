@@ -143,6 +143,10 @@ export class AuthService {
     return this.jwtService.sign({ sub: user.id, email: user.email });
   }
 
+  async getUserById(userId: number) {
+    return this.usersService.findOne(userId);
+  }
+
   // Resend a new verification code for an existing unverified user
   async resendVerification(email: string) {
     const user: any = await this.usersService.findByEmail(email);

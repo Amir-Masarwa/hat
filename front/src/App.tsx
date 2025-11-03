@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { api, setApiToken } from './services/api';
+import { api } from './services/api';
 import TaskList from './components/TaskList';
 import TaskForm from './components/TaskForm';
 import LoginPage from './components/LoginPage';
@@ -32,44 +32,38 @@ function App() {
   const [verificationName, setVerificationName] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      setApiToken(token);
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-    }
+    checkSession();
   }, []);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchCurrentUser();
-      fetchTasks();
-    }
-  }, [isAuthenticated]);
-
-  const fetchCurrentUser = async () => {
+  const checkSession = async () => {
     try {
-      setLoading(true);
-      const response = await api.get('/users/me');
+      const response = await api.get('/auth/me');
       setCurrentUser(response.data);
+      setIsAuthenticated(true);
+      fetchTasks();
     } catch (error) {
-      setCurrentUser(null);
-      logout();
+      setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await api.get('/users/me');
+      setCurrentUser(response.data);
+    } catch (error) {
+      setCurrentUser(null);
+      setIsAuthenticated(false);
+    }
+  };
+
   const fetchTasks = async () => {
     try {
-      setLoading(true);
       const response = await api.get('/tasks');
       setTasks(response.data);
     } catch (error) {
       setTasks([]);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -85,9 +79,12 @@ function App() {
     fetchTasks();
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setApiToken(null);
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     setCurrentUser(null);
     setTasks([]);
     setIsAuthenticated(false);
@@ -113,7 +110,6 @@ function App() {
         <VerificationPage
           email={verificationEmail}
           onVerified={() => {
-            // Clear verification state and show login page
             setVerificationEmail(null);
             setVerificationName(null);
             setShowSignUp(false);
@@ -124,10 +120,8 @@ function App() {
     } else if (showSignUp) {
       return (
         <SignUpPage
-          onLogin={(token: string) => {
-            localStorage.setItem('token', token);
-            setApiToken(token);
-            setIsAuthenticated(true);
+          onLogin={() => {
+            checkSession();
           }}
           onSwitchToLogin={() => setShowSignUp(false)}
           onVerificationSent={(email: string, name: string) => {
@@ -139,10 +133,8 @@ function App() {
     } else {
       return (
         <LoginPage
-          onLogin={(token: string) => {
-            localStorage.setItem('token', token);
-            setApiToken(token);
-            setIsAuthenticated(true);
+          onLogin={() => {
+            checkSession();
           }}
           onSwitchToSignUp={() => setShowSignUp(true)}
         />
