@@ -14,6 +14,8 @@ interface Task {
   completed: boolean;
   userId: number;
   user?: User;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface TaskListProps {
@@ -99,104 +101,131 @@ const TaskList: React.FC<TaskListProps> = ({
   };
 
   return (
-    <div className="card">
-      <h2>
-        {selectedUserId
-          ? `Tasks for ${getUserName(selectedUserId)}`
-          : 'All Tasks'}
-      </h2>
-      {tasks.length === 0 ? (
-        <p style={{ color: '#666', textAlign: 'center', padding: '20px' }}>
-          No tasks found. Create a new task below!
-        </p>
-      ) : (
-        tasks.map((task) => (
-          <div
-            key={task.id}
-            className={`task-item ${task.completed ? 'completed' : ''}`}
-          >
-            {editingTaskId === task.id ? (
-              <form
-                style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}
-                onSubmit={e => { e.preventDefault(); handleEditSave(task.id); }}
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
+        <h2 className="text-2xl font-bold text-white">
+          My Tasks
+        </h2>
+      </div>
+      
+      <div className="p-6">
+        {tasks.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">📝</div>
+            <p className="text-gray-500 text-lg">No tasks yet!</p>
+            <p className="text-gray-400 text-sm mt-2">Create your first task below to get started</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {tasks.map((task) => (
+              <div
+                key={task.id}
+                className={`group border rounded-lg p-4 transition-all duration-200 hover:shadow-md ${
+                  task.completed 
+                    ? 'bg-gray-50 border-gray-200' 
+                    : 'bg-white border-blue-200 hover:border-blue-300'
+                }`}
               >
-                <input
-                  name="title"
-                  value={editFields.title || ''}
-                  onChange={handleEditFieldChange}
-                  required
-                  style={{ marginBottom: 4 }}
-                />
-                <textarea
-                  name="description"
-                  value={editFields.description || ''}
-                  onChange={handleEditFieldChange}
-                  style={{ marginBottom: 4 }}
-                />
-                <div style={{ marginBottom: 4, color: '#999', fontSize: '12px' }}>
-                  User: {getUserName(task.userId)}
-                </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
-                  <label>
+                {editingTaskId === task.id ? (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleEditSave(task.id);
+                    }}
+                    className="space-y-3"
+                  >
+                    <input
+                      name="title"
+                      value={editFields.title || ''}
+                      onChange={handleEditFieldChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Task title"
+                    />
+                    <textarea
+                      name="description"
+                      value={editFields.description || ''}
+                      onChange={handleEditFieldChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                      placeholder="Description (optional)"
+                      rows={2}
+                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        name="completed"
+                        checked={!!editFields.completed}
+                        onChange={handleEditFieldChange}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                      />
+                      <label className="text-sm text-gray-700">Mark as completed</label>
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        type="submit"
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleEditCancel}
+                        className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="flex items-start gap-4">
                     <input
                       type="checkbox"
-                      name="completed"
-                      checked={!!editFields.completed}
-                      onChange={handleEditFieldChange}
-                    />{' '}
-                    Completed
-                  </label>
-                </div>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button className="btn btn-primary" type="submit" style={{ flex: 1 }}>Save</button>
-                  <button className="btn" type="button" onClick={handleEditCancel} style={{ flex: 1 }}>Cancel</button>
-                </div>
-              </form>
-            ) : (
-              <>
-                <div style={{ flex: 1 }}>
-                  <div className="task-title" style={{ fontWeight: 'bold' }}>
-                    {task.title}
-                  </div>
-                  {task.description && (
-                    <div style={{ color: '#666', fontSize: '14px', marginTop: '5px' }}>
-                      {task.description}
+                      checked={task.completed}
+                      onChange={() => handleToggleComplete(task)}
+                      className="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h3
+                        className={`font-semibold text-gray-900 ${
+                          task.completed ? 'line-through text-gray-500' : ''
+                        }`}
+                      >
+                        {task.title}
+                      </h3>
+                      {task.description && (
+                        <p className={`text-sm mt-1 ${
+                          task.completed ? 'text-gray-400' : 'text-gray-600'
+                        }`}>
+                          {task.description}
+                        </p>
+                      )}
+                      <p className="text-xs text-gray-400 mt-2">
+                        {new Date(task.createdAt || Date.now()).toLocaleDateString()}
+                      </p>
                     </div>
-                  )}
-                  <div style={{ color: '#999', fontSize: '12px', marginTop: '5px' }}>
-                    User: {getUserName(task.userId)}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEditClick(task)}
+                        className="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-700 text-sm font-medium rounded-lg transition-colors duration-200"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(task.id)}
+                        className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg transition-colors duration-200"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={() => handleToggleComplete(task)}
-                    style={{ cursor: 'pointer' }}
-                  />
-                  <button
-                    className="btn"
-                    style={{ padding: '5px 10px', fontSize: '12px', background: '#ffc107', color: '#333' }}
-                    onClick={() => handleEditClick(task)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn btn-danger"
-                    onClick={() => handleDelete(task.id)}
-                    style={{ padding: '5px 10px', fontSize: '12px' }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </>
-            )}
+                )}
+              </div>
+            ))}
           </div>
-        ))
-      )}
+        )}
+      </div>
     </div>
   );
 };
 
 export default TaskList;
-
