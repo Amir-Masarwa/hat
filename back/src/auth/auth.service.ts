@@ -75,6 +75,13 @@ export class AuthService {
     if (!user) throw new BadRequestException('User not found');
     if (user.verified) throw new BadRequestException('Email already verified');
 
+    // Check if too many failed verification attempts
+    if (user.failedVerificationCount >= 5) {
+      throw new BadRequestException(
+        'Too many failed verification attempts. Please request a new code.',
+      );
+    }
+
     const record = await (this.prisma as any).verificationCode.findFirst({
       where: {
         userId: user.id,
@@ -84,17 +91,41 @@ export class AuthService {
       orderBy: { createdAt: 'desc' },
     });
 
-    if (!record) throw new BadRequestException('No valid verification code found');
+    // Code expired or not found (1-minute expiry already enforced by expiresAt check)
+    if (!record) {
+      throw new BadRequestException(
+        'Verification code expired or not found. Please request a new code.',
+      );
+    }
 
     const ok = await bcrypt.compare(code, record.codeHash);
-    if (!ok) throw new BadRequestException('Invalid verification code');
+    if (!ok) {
+      // Increment failed verification count
+      const newCount = (user.failedVerificationCount || 0) + 1;
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { failedVerificationCount: newCount } as any,
+      });
 
+      if (newCount >= 5) {
+        throw new BadRequestException(
+          'Too many failed attempts. Please request a new code.',
+        );
+      }
+
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    // Success: verify user and reset failed counter
     await this.prisma.$transaction([
       (this.prisma as any).verificationCode.update({
         where: { id: record.id },
         data: { consumedAt: new Date() },
       }),
-      this.prisma.user.update({ where: { id: user.id }, data: { verified: true } as any }),
+      this.prisma.user.update({
+        where: { id: user.id },
+        data: { verified: true, failedVerificationCount: 0 } as any,
+      }),
     ]);
 
     return { message: 'Email verified successfully. Please log in.' };
@@ -166,6 +197,12 @@ export class AuthService {
 
     const code = this.generateVerificationCode();
     const hash = await bcrypt.hash(code, 10);
+
+    // Reset failed verification counter on resend
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { failedVerificationCount: 0 } as any,
+    });
 
     await (this.prisma as any).verificationCode.create({
       data: {
