@@ -28,6 +28,8 @@ interface TaskListProps {
 
 type SortOption = 'newest' | 'oldest' | 'alphabetical';
 
+const ITEMS_PER_PAGE = 5;
+
 const TaskList: React.FC<TaskListProps> = ({
   tasks,
   users,
@@ -40,6 +42,7 @@ const TaskList: React.FC<TaskListProps> = ({
   const [editError, setEditError] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [searchId, setSearchId] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleEditClick = (task: Task) => {
     setEditingTaskId(task.id);
@@ -150,6 +153,17 @@ const TaskList: React.FC<TaskListProps> = ({
     return result;
   }, [tasks, sortBy, searchId]);
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAndSortedTasks.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedTasks = filteredAndSortedTasks.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search or sort changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchId, sortBy]);
+
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
@@ -202,8 +216,19 @@ const TaskList: React.FC<TaskListProps> = ({
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredAndSortedTasks.map((task) => (
+          <>
+            {/* Task count and page info */}
+            <div className="mb-4 flex items-center justify-between text-sm text-gray-600">
+              <span>
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredAndSortedTasks.length)} of {filteredAndSortedTasks.length} tasks
+              </span>
+              <span className="text-xs text-gray-500">
+                Page {currentPage} of {totalPages}
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {paginatedTasks.map((task) => (
               <div
                 key={task.id}
                 className={`group border rounded-lg p-4 transition-all duration-200 hover:shadow-md ${
@@ -335,7 +360,45 @@ const TaskList: React.FC<TaskListProps> = ({
                 )}
               </div>
             ))}
-          </div>
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  ← Previous
+                </button>
+
+                <div className="flex gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                        currentPage === page
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
