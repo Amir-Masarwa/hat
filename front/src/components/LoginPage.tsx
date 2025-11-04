@@ -9,18 +9,70 @@ interface LoginPageProps {
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToSignUp }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({ email: '', password: '', general: '' });
+  const [touched, setTouched] = useState({ email: false, password: false });
   const [loading, setLoading] = useState(false);
+
+  const validateEmail = (value: string) => {
+    if (!value) return 'Email is required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Please enter a valid email';
+    return '';
+  };
+
+  const validatePassword = (value: string) => {
+    if (!value) return 'Password is required';
+    if (value.length < 6) return 'Password must be at least 6 characters';
+    return '';
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    if (touched.email) {
+      setErrors(prev => ({ ...prev, email: validateEmail(value) }));
+    }
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    if (touched.password) {
+      setErrors(prev => ({ ...prev, password: validatePassword(value) }));
+    }
+  };
+
+  const handleBlur = (field: 'email' | 'password') => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    if (field === 'email') {
+      setErrors(prev => ({ ...prev, email: validateEmail(email) }));
+    } else {
+      setErrors(prev => ({ ...prev, password: validatePassword(password) }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    
+    // Mark all fields as touched
+    setTouched({ email: true, password: true });
+    
+    // Validate all fields
+    const emailError = validateEmail(email);
+    const passwordError = validatePassword(password);
+    
+    if (emailError || passwordError) {
+      setErrors({ email: emailError, password: passwordError, general: '' });
+      return;
+    }
+
+    setErrors({ email: '', password: '', general: '' });
     setLoading(true);
     try {
       await api.post('/auth/login', { email, password });
       onLogin();
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Login failed.');
+      setErrors(prev => ({
+        ...prev,
+        general: err?.response?.data?.message || 'Login failed.',
+      }));
     } finally {
       setLoading(false);
     }
@@ -45,12 +97,23 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToSignUp }) => {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  onBlur={() => handleBlur('email')}
                   required
                   disabled={loading}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-100"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-100 ${
+                    errors.email && touched.email
+                      ? 'border-red-500 focus:ring-red-500'
+                      : 'border-gray-300 focus:ring-blue-500'
+                  }`}
                   placeholder="you@example.com"
                 />
+                {errors.email && touched.email && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <span>⚠</span>
+                    {errors.email}
+                  </p>
+                )}
               </div>
               
               <div>
@@ -60,23 +123,34 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToSignUp }) => {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => handlePasswordChange(e.target.value)}
+                  onBlur={() => handleBlur('password')}
                   required
                   disabled={loading}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-100"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 disabled:bg-gray-100 ${
+                    errors.password && touched.password
+                      ? 'border-red-500 focus:ring-red-500'
+                      : 'border-gray-300 focus:ring-blue-500'
+                  }`}
                   placeholder="••••••••"
                 />
+                {errors.password && touched.password && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                    <span>⚠</span>
+                    {errors.password}
+                  </p>
+                )}
               </div>
               
-              {error && (
+              {errors.general && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {error}
+                  {errors.general}
                 </div>
               )}
               
               <button
                 type="submit"
-                disabled={loading || !email || !password}
+                disabled={loading || !email || !password || !!errors.email || !!errors.password}
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (

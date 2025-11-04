@@ -35,6 +35,7 @@ const TaskList: React.FC<TaskListProps> = ({
 }) => {
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
   const [editFields, setEditFields] = useState<Partial<Task>>({});
+  const [editError, setEditError] = useState('');
 
   const handleEditClick = (task: Task) => {
     setEditingTaskId(task.id);
@@ -58,19 +59,29 @@ const TaskList: React.FC<TaskListProps> = ({
   };
 
   const handleEditSave = async (taskId: number) => {
+    setEditError('');
+    
+    // Validate
+    if (!editFields.title || editFields.title.trim().length < 3) {
+      setEditError('Title must be at least 3 characters');
+      return;
+    }
+    
     try {
       await api.patch(`/tasks/${taskId}`, editFields);
       setEditingTaskId(null);
       setEditFields({});
+      setEditError('');
       onTaskUpdate();
-    } catch (error) {
-      alert('Failed to save task update.');
+    } catch (error: any) {
+      setEditError(error?.response?.data?.message || 'Failed to save task update.');
     }
   };
 
   const handleEditCancel = () => {
     setEditingTaskId(null);
     setEditFields({});
+    setEditError('');
   };
 
   const handleToggleComplete = async (task: Task) => {
@@ -134,14 +145,26 @@ const TaskList: React.FC<TaskListProps> = ({
                     }}
                     className="space-y-3"
                   >
-                    <input
-                      name="title"
-                      value={editFields.title || ''}
-                      onChange={handleEditFieldChange}
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Task title"
-                    />
+                    <div>
+                      <input
+                        name="title"
+                        value={editFields.title || ''}
+                        onChange={handleEditFieldChange}
+                        required
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-all duration-200 ${
+                          editError && (!editFields.title || editFields.title.trim().length < 3)
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-gray-300 focus:ring-blue-500'
+                        }`}
+                        placeholder="Task title"
+                      />
+                      {editError && (!editFields.title || editFields.title.trim().length < 3) && (
+                        <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                          <span>⚠</span>
+                          {editError}
+                        </p>
+                      )}
+                    </div>
                     <textarea
                       name="description"
                       value={editFields.description || ''}
@@ -160,6 +183,11 @@ const TaskList: React.FC<TaskListProps> = ({
                       />
                       <label className="text-sm text-gray-700">Mark as completed</label>
                     </div>
+                    {editError && editFields.title && editFields.title.trim().length >= 3 && (
+                      <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">
+                        {editError}
+                      </div>
+                    )}
                     <div className="flex gap-2 pt-2">
                       <button
                         type="submit"
