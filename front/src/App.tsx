@@ -6,11 +6,13 @@ import TaskForm from './components/TaskForm';
 import LoginPage from './components/LoginPage';
 import SignUpPage from './components/SignUpPage';
 import VerificationPage from './components/VerificationPage';
+import AdminPanel from './components/AdminPanel';
 
 interface User {
   id: number;
   email: string;
   name?: string;
+  isAdmin?: boolean;
 }
 
 interface Task {
@@ -176,20 +178,27 @@ function App() {
           </div>
         </div>
       </header>
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="space-y-6">
-          <TaskList
-            tasks={tasks}
-            users={[currentUser].filter(Boolean) as User[]}
-            selectedUserId={currentUser?.id || null}
-            onTaskUpdate={handleTaskUpdated}
-            onTaskDelete={handleTaskDeleted}
-          />
-          <TaskForm
-            users={[currentUser].filter(Boolean) as User[]}
-            selectedUserId={currentUser?.id || null}
-            onTaskCreated={handleTaskCreated}
-          />
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <TaskList
+              tasks={tasks}
+              users={[currentUser].filter(Boolean) as User[]}
+              selectedUserId={currentUser?.id || null}
+              onTaskUpdate={handleTaskUpdated}
+              onTaskDelete={handleTaskDeleted}
+            />
+            <TaskForm
+              users={[currentUser].filter(Boolean) as User[]}
+              selectedUserId={currentUser?.id || null}
+              onTaskCreated={handleTaskCreated}
+            />
+          </div>
+          {currentUser?.isAdmin && (
+            <div className="lg:col-span-1">
+              <AdminPanel />
+            </div>
+          )}
         </div>
       </div>
     </div>

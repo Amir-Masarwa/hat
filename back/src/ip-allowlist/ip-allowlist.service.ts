@@ -74,12 +74,21 @@ export class IpAllowlistService {
   }
 
   /**
-   * Get all IPs in the allow-list
+   * Get all IPs in the allow-list (including inactive for admin)
    */
   async getAllIps() {
     return (this.prisma as any).ipAllowList.findMany({
-      where: { isActive: true },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Reactivate an IP
+   */
+  async activateIp(ip: string) {
+    return (this.prisma as any).ipAllowList.update({
+      where: { ip },
+      data: { isActive: true },
     });
   }
 }
