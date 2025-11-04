@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { api } from '../services/api';
 
 interface User {
@@ -26,6 +26,8 @@ interface TaskListProps {
   onTaskDelete: () => void;
 }
 
+type SortOption = 'newest' | 'oldest' | 'alphabetical';
+
 const TaskList: React.FC<TaskListProps> = ({
   tasks,
   users,
@@ -36,6 +38,8 @@ const TaskList: React.FC<TaskListProps> = ({
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
   const [editFields, setEditFields] = useState<Partial<Task>>({});
   const [editError, setEditError] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [searchId, setSearchId] = useState('');
 
   const handleEditClick = (task: Task) => {
     setEditingTaskId(task.id);
@@ -61,7 +65,6 @@ const TaskList: React.FC<TaskListProps> = ({
   const handleEditSave = async (taskId: number) => {
     setEditError('');
     
-    // Validate
     if (!editFields.title || editFields.title.trim().length < 3) {
       setEditError('Title must be at least 3 characters');
       return;
@@ -111,6 +114,42 @@ const TaskList: React.FC<TaskListProps> = ({
     return user?.name || user?.email || 'Unknown';
   };
 
+  // Filter and sort tasks
+  const filteredAndSortedTasks = useMemo(() => {
+    let result = [...tasks];
+
+    // Filter by ID if search is active
+    if (searchId) {
+      const id = parseInt(searchId);
+      if (!isNaN(id)) {
+        result = result.filter(task => task.id === id);
+      }
+    }
+
+    // Sort
+    switch (sortBy) {
+      case 'newest':
+        result.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+        break;
+      case 'oldest':
+        result.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateA - dateB;
+        });
+        break;
+      case 'alphabetical':
+        result.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+    }
+
+    return result;
+  }, [tasks, sortBy, searchId]);
+
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
@@ -120,15 +159,51 @@ const TaskList: React.FC<TaskListProps> = ({
       </div>
       
       <div className="p-6">
-        {tasks.length === 0 ? (
+        {/* Controls: Search and Sort */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-gray-600 mb-1">
+              Search by ID
+            </label>
+            <input
+              type="text"
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
+              placeholder="Enter task ID..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            />
+          </div>
+          <div className="sm:w-48">
+            <label className="block text-xs font-semibold text-gray-600 mb-1">
+              Sort By
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm bg-white"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="alphabetical">A → Z</option>
+            </select>
+          </div>
+        </div>
+
+        {filteredAndSortedTasks.length === 0 ? (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">📝</div>
-            <p className="text-gray-500 text-lg">No tasks yet!</p>
-            <p className="text-gray-400 text-sm mt-2">Create your first task below to get started</p>
+            <div className="text-6xl mb-4">
+              {searchId ? '🔍' : '📝'}
+            </div>
+            <p className="text-gray-500 text-lg">
+              {searchId ? 'No task found with that ID' : 'No tasks yet!'}
+            </p>
+            <p className="text-gray-400 text-sm mt-2">
+              {searchId ? 'Try a different ID' : 'Create your first task below to get started'}
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {tasks.map((task) => (
+            {filteredAndSortedTasks.map((task) => (
               <div
                 key={task.id}
                 className={`group border rounded-lg p-4 transition-all duration-200 hover:shadow-md ${
@@ -213,13 +288,18 @@ const TaskList: React.FC<TaskListProps> = ({
                       className="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
                     />
                     <div className="flex-1 min-w-0">
-                      <h3
-                        className={`font-semibold text-gray-900 ${
-                          task.completed ? 'line-through text-gray-500' : ''
-                        }`}
-                      >
-                        {task.title}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                          #{task.id}
+                        </span>
+                        <h3
+                          className={`font-semibold text-gray-900 ${
+                            task.completed ? 'line-through text-gray-500' : ''
+                          }`}
+                        >
+                          {task.title}
+                        </h3>
+                      </div>
                       {task.description && (
                         <p className={`text-sm mt-1 ${
                           task.completed ? 'text-gray-400' : 'text-gray-600'
@@ -228,7 +308,13 @@ const TaskList: React.FC<TaskListProps> = ({
                         </p>
                       )}
                       <p className="text-xs text-gray-400 mt-2">
-                        {new Date(task.createdAt || Date.now()).toLocaleDateString()}
+                        {task.createdAt && new Date(task.createdAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
                       </p>
                     </div>
                     <div className="flex gap-2">

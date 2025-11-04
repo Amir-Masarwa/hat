@@ -23,6 +23,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
   const [errors, setErrors] = useState({ title: '', general: '' });
   const [touched, setTouched] = useState({ title: false });
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const validateTitle = (value: string) => {
     if (!value.trim()) return 'Task title is required';
@@ -65,6 +66,11 @@ const TaskForm: React.FC<TaskFormProps> = ({
       setTitle('');
       setDescription('');
       setTouched({ title: false });
+      
+      // Show success feedback
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+      
       onTaskCreated();
     } catch (error: any) {
       console.error('Error creating task:', error);
@@ -78,7 +84,17 @@ const TaskForm: React.FC<TaskFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
+      {/* Success Toast */}
+      {showSuccess && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 animate-bounce">
+          <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-2">
+            <span className="text-2xl">✓</span>
+            <span className="font-semibold">Task created successfully!</span>
+          </div>
+        </div>
+      )}
+      
       <div className="bg-gradient-to-r from-indigo-600 to-purple-700 px-6 py-4">
         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
           <span>➕</span>
