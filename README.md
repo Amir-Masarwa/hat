@@ -47,6 +47,7 @@ Frontend will run on http://localhost:3000
 to see the db  :
  
 cd back
+
 npx prisma studio
 
 to test :
