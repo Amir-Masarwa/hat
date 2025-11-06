@@ -50,5 +50,6 @@ cd back
 npx prisma studio
 
 to test :
-
+<you need to give it real User<email and password> 
+to the file "front\cypress\e2e\complete-user-journey.cy.ts" >
 npm run test:e2e
