@@ -1,6 +1,6 @@
 describe('Complete User Journey - Full Task Workflow', () => {
   // Test user credentials
-  const testEmail = 'amirmas@post.gbu.ac.il';
+  const testEmail = 'amirmas112@gmail.com';
   const testPassword = 'masarwa112';
   
   before(() => {

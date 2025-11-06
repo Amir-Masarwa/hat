@@ -44,5 +44,11 @@ npm start
 
 Frontend will run on http://localhost:3000
 
+to see the db  :
+ 
+cd back
+npx prisma studio
 
-URL    :
+to test :
+
+npm run test:e2e
