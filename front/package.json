@@ -15,12 +15,16 @@
   "devDependencies": {
     "tailwindcss": "^3.4.0",
     "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32"
+    "postcss": "^8.4.32",
+    "cypress": "^13.6.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "test:e2e": "cypress run",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
