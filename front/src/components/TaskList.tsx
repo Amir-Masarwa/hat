@@ -166,10 +166,18 @@ const TaskList: React.FC<TaskListProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
-        <h2 className="text-2xl font-bold text-white">
-          My Tasks
-        </h2>
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <span className="text-3xl">📋</span>
+              <span>My Tasks</span>
+            </h2>
+            <p className="text-blue-100 text-sm mt-1">
+              {filteredAndSortedTasks.length} {filteredAndSortedTasks.length === 1 ? 'task' : 'tasks'} total
+            </p>
+          </div>
+        </div>
       </div>
       
       <div className="p-6">

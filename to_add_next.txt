@@ -1,0 +1,41 @@
+in login : 
+Password Reset Flow like in verificationCode
+
+////////////////////////////////////////
+in task's  :
+
+make it many to many 
+
+add Category model (Work, Personal, Urgent)
+Filter by category
+Email reminders via cron job
+Visual indicators (overdue = red, due soon = yellow)
+ add a date 
+
+priority enum (Low, Medium, High,)
+
+Full-text search across title/description
+Filter by completion status
+Filter by date range
+
+///////////////////////////////////////
+
+
+Multi-language support (English, Hebrew, etc.)
+
+ /////////////////////////////
+ AI :
+
+form a text file (pdf , word ) to task's ToDoList 
+
+useing LLMS to build smart work flow with given task
+
+///////////////////////////////
+Recurring Tasks
+Daily, weekly, monthly tasks
+Auto-create based on schedule
+
+/////////////////////////////
+Analytics Dashboard
+Task completion rate
+Productivity trends

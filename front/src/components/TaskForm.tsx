@@ -84,22 +84,23 @@ const TaskForm: React.FC<TaskFormProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden relative sticky top-6">
       {/* Success Toast */}
       {showSuccess && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 animate-bounce">
           <div className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-2">
             <span className="text-2xl">✓</span>
-            <span className="font-semibold">Task created successfully!</span>
+            <span className="font-semibold">Task created!</span>
           </div>
         </div>
       )}
       
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-700 px-6 py-4">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-700 px-6 py-5">
         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-          <span>➕</span>
-          Create New Task
+          <span className="text-3xl">➕</span>
+          <span>Create New Task</span>
         </h2>
+        <p className="text-indigo-100 text-sm mt-1">Add a task to your list</p>
       </div>
       
       <div className="p-6">

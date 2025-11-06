@@ -32,9 +32,14 @@ export class AuthController {
     @Request() req: any,
     @Res({ passthrough: true }) res: Response,
   ) {
-    // Extract client IP (tamper-resistant: prefer direct IP over headers)
-    const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+    // Extract real client IP from proxy headers (Render uses X-Forwarded-For)
+    const forwardedFor = req.headers['x-forwarded-for'];
+    const clientIp = forwardedFor 
+      ? (Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor.split(',')[0].trim())
+      : req.ip || req.connection.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'];
+    
+    console.log('🔍 Login attempt from IP:', clientIp, '| User-Agent:', userAgent);
 
     const token = await this.authService.loginUser(
       dto.email,

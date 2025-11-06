@@ -44,40 +44,5 @@ npm start
 
 Frontend will run on http://localhost:3000
 
-## Database Schema
 
-### User Table
-- `id` - Primary key (auto-increment)
-- `email` - Unique email address
-- `name` - Optional name
-- `createdAt` - Creation timestamp
-- `updatedAt` - Last update timestamp
-
-### Task Table
-- `id` - Primary key (auto-increment)
-- `title` - Task title
-- `description` - Optional description
-- `completed` - Boolean (default: false)
-- `userId` - Foreign key to User
-- `createdAt` - Creation timestamp
-- `updatedAt` - Last update timestamp
-
-## Features
-
-- ✅ Create and manage users
-- ✅ Create tasks for users
-- ✅ View all tasks or filter by user
-- ✅ Mark tasks as complete/incomplete
-- ✅ Delete tasks
-- ✅ RESTful API with validation
-
-## Next Steps
-
-You can extend this basic setup with:
-- User authentication
-- Task categories/tags
-- Due dates and reminders
-- Task prioritization
-- Search and filtering
-- And more!
-
+URL    :

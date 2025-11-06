@@ -77,13 +77,13 @@ const AdminPanel: React.FC = () => {
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div className="bg-gradient-to-r from-purple-600 to-pink-700 px-6 py-4">
+      <div className="bg-gradient-to-r from-purple-600 to-pink-700 px-6 py-5">
         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-          <span>🛡️</span>
-          IP Allow-List Management
+          <span className="text-3xl">🛡️</span>
+          <span>Admin Panel</span>
         </h2>
         <p className="text-purple-100 text-sm mt-1">
-          Manage which IP addresses can access the system
+          IP Allow-List Management
         </p>
       </div>
 
